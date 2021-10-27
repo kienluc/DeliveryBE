@@ -39,6 +39,10 @@ class Service(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True)
+    price = models.DecimalField(max_digits=14, decimal_places=2, null=True)
+
+    #def earning_float(self):
+     #   return float(self.price)
 
     def __str__(self):
         return self.name
@@ -59,24 +63,29 @@ class Order(models.Model):
         (CASH, 'TIỀN MẶT')
     ]
     customer = models.ForeignKey(User, related_name="customer_name", on_delete=models.PROTECT)
-    shipper = models.OneToOneField(User, related_name="shipper_name", on_delete=models.PROTECT, primary_key=True)
+    shipper = models.ForeignKey(User, related_name="shipper_name", on_delete=models.PROTECT)
     auction = models.ForeignKey('Auction', on_delete=models.PROTECT)
     created_date = models.DateTimeField(auto_now_add=True)
     ship_address = models.CharField(max_length=250, null=True, blank=True)
     active = models.BooleanField(default=True)
     status = models.PositiveSmallIntegerField(choices=STATE, default=NOTSHIP)
+    total_price = models.DecimalField(max_digits=14, decimal_places=2, null=True, default=None)
     pay_method = models.PositiveSmallIntegerField(choices=PAY_METHOD, default=CASH)
     service_cate = models.ForeignKey(Service, on_delete=models.PROTECT, null=True)
 
+    #def earning_float(self):
+     #   return float(self.total_price)
+
     def __str__(self):
-        return "Customer: {}\nShipper: {}, \nShip address: {}, \nCreated Date: {}, \nStatus: {}, \nPay method: {}" \
-            .format(self.customer.first_name + " " + self.customer.last_name,
-                    self.shipper.first_name + " " + self.shipper.last_name,
-                    self.ship_address,
-                    self.created_date,
-                    self.status,
-                    self.pay_method
-                    )
+        return "Customer: {}\nShipper: {}, \nShip address: {}, \nCreated Date: {}, \nStatus: {},\n" \
+               "Total price: {}, \nPay method: {}".format(self.customer.first_name + " " + self.customer.last_name,
+                                                          self.shipper.first_name + " " + self.shipper.last_name,
+                                                          self.ship_address,
+                                                          self.created_date,
+                                                          self.status,
+                                                          self.total_price,
+                                                          self.pay_method
+                                                          )
 
 
 class OrderPost(models.Model):

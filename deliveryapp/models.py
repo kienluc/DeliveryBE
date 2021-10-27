@@ -41,8 +41,16 @@ class Service(models.Model):
     active = models.BooleanField(default=True)
     price = models.DecimalField(max_digits=14, decimal_places=2, null=True)
 
-    #def earning_float(self):
-     #   return float(self.price)
+    # def earning_float(self):
+    #   return float(self.price)
+
+    def __str__(self):
+        return self.name
+
+
+class ProductCategory(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.name
@@ -66,15 +74,17 @@ class Order(models.Model):
     shipper = models.ForeignKey(User, related_name="shipper_name", on_delete=models.PROTECT)
     auction = models.ForeignKey('Auction', on_delete=models.PROTECT)
     created_date = models.DateTimeField(auto_now_add=True)
+    pickup_address = models.CharField(max_length=250, null=True, blank=True)
     ship_address = models.CharField(max_length=250, null=True, blank=True)
     active = models.BooleanField(default=True)
     status = models.PositiveSmallIntegerField(choices=STATE, default=NOTSHIP)
     total_price = models.DecimalField(max_digits=14, decimal_places=2, null=True, default=None)
     pay_method = models.PositiveSmallIntegerField(choices=PAY_METHOD, default=CASH)
+    product_cate = models.ForeignKey(ProductCategory, on_delete=models.PROTECT, null=True)
     service_cate = models.ForeignKey(Service, on_delete=models.PROTECT, null=True)
 
-    #def earning_float(self):
-     #   return float(self.total_price)
+    # def earning_float(self):
+    #   return float(self.total_price)
 
     def __str__(self):
         return "Customer: {}\nShipper: {}, \nShip address: {}, \nCreated Date: {}, \nStatus: {},\n" \
@@ -86,6 +96,15 @@ class Order(models.Model):
                                                           self.total_price,
                                                           self.pay_method
                                                           )
+
+
+class OrderDetail(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, primary_key=True)
+    customer_received = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=10, null=True)
+
+    def __str__(self):
+        return "Order Detail - Order ID {}".format(self.order.id)
 
 
 class OrderPost(models.Model):

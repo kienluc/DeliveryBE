@@ -11,8 +11,8 @@ class DeliveryAppAdminSite(admin.AdminSite):
 
     def get_urls(self):
         return [
-            path('delivery-stats/', self.delivery_stats)
-        ] + super().get_urls()
+                   path('delivery-stats/', self.delivery_stats)
+               ] + super().get_urls()
 
     def delivery_stats(self, request):
         order_count = Order.objects.count()
@@ -29,6 +29,11 @@ admin_site = DeliveryAppAdminSite("myapp")
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ['id', 'created_date', 'name', 'price', 'active']
     search_fields = ['name', 'created_date', 'price']
+
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'active']
+    search_fields = ['name', 'active']
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -52,16 +57,16 @@ class ShipperAdmin(admin.ModelAdmin):
         return "%s %s" % (shipper.account.first_name, shipper.account.last_name)
 
     def gender(self, shipper):
-        return "%s " % (shipper.account.gender)
+        return "%s " % shipper.account.gender
 
     def email(self, shipper):
-        return "%s " % (shipper.account.email)
+        return "%s " % shipper.account.email
 
     def shipper_phone(self, shipper):
-        return "%s " % (shipper.account.phone)
+        return "%s " % shipper.account.phone
 
     def date_joined(self, shipper):
-        return "%s " % (shipper.account.date_joined)
+        return "%s " % shipper.account.date_joined
 
     def front_id(self, shipper):
         return mark_safe(
@@ -81,16 +86,27 @@ class AuctionAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['created_date', 'customer_name', 'shipper_name', 'ship_address',
-                    'service_cate', 'total_price', 'pay_method', 'status']
+    list_display = ['created_date', 'customer_name', 'shipper_name', 'pickup_address', 'ship_address',
+                    'product_cate', 'service_cate', 'total_price', 'pay_method', 'status']
     search_fields = ['customer__first_name', 'customer__last_name', 'shipper__first_name', 'shipper__last_name',
                      'ship_address', 'status']
+
+    def product_cate(self, order):
+        return "%s " % order.product_cate.name
 
     def customer_name(self, order):
         return "%s %s" % (order.customer.first_name, order.customer.last_name)
 
     def shipper_name(self, order):
         return "%s %s" % (order.shipper.first_name, order.shipper.last_name)
+
+
+class OrderDetailAdmin(admin.ModelAdmin):
+    list_display = ['order_id', 'order', 'customer_received', 'phone']
+    search_fields = ['order__id', 'order__pay_method', 'order__product_cate']
+
+    def order_id(self, orderdetail):
+        return "%s " % orderdetail.order.id
 
 
 class OrderPostAdmin(admin.ModelAdmin):
@@ -121,5 +137,7 @@ admin_site.register(Shipper, ShipperAdmin)
 admin_site.register(Service, ServiceAdmin)
 admin_site.register(OrderPost, OrderPostAdmin)
 admin_site.register(Order, OrderAdmin)
+admin_site.register(ProductCategory, ProductAdmin)
 admin_site.register(Rating, RatingAdmin)
 admin_site.register(Auction, AuctionAdmin)
+# admin_site.register(OrderDetail, OrderDetailAdmin)

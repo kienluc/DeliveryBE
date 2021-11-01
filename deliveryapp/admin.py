@@ -48,7 +48,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class ShipperAdmin(admin.ModelAdmin):
-    list_display = ['id_number', 'shipper_name', 'gender', 'email', 'shipper_phone', 'account', 'date_joined']
+    list_display = [ 'shipper_name', 'id_number', 'gender', 'email', 'shipper_phone', 'account', 'date_joined']
     search_fields = ['id_number', 'account__first_name', 'account__last_name', 'account__email',
                      'account__phone']
     readonly_fields = ['front_id', 'back_id']
@@ -86,7 +86,7 @@ class AuctionAdmin(admin.ModelAdmin):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['created_date', 'customer_name', 'shipper_name', 'pickup_address', 'ship_address',
+    list_display = ['id', 'created_date', 'customer_name', 'shipper_name', 'pickup_address', 'ship_address',
                     'product_cate', 'service_cate', 'total_price', 'pay_method', 'status']
     search_fields = ['customer__first_name', 'customer__last_name', 'shipper__first_name', 'shipper__last_name',
                      'ship_address', 'status']
@@ -110,7 +110,7 @@ class OrderDetailAdmin(admin.ModelAdmin):
 
 
 class OrderPostAdmin(admin.ModelAdmin):
-    list_display = ['id', 'creator_name', 'content', 'ship_address', 'created_date', 'is_checked']
+    list_display = ['id', 'creator_name', 'content', 'pickup_address', 'ship_address', 'created_date', 'is_checked']
     search_fields = ['creator', 'ship_address', 'creator__first_name', 'creator__last_name']
 
     def creator_name(self, orderpost):

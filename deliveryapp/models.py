@@ -111,6 +111,7 @@ class OrderPost(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
     content = models.TextField(null=True)
+    pickup_address = models.CharField(max_length=250, null=False, blank=True)
     ship_address = models.CharField(max_length=250, null=False, blank=True)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
@@ -131,7 +132,7 @@ class Auction(models.Model):
         ordering = ['post']
 
     post = models.ForeignKey(OrderPost, related_name="auctions", on_delete=models.CASCADE)
-    shipper = models.ForeignKey(User, related_name="shipper_info", on_delete=models.CASCADE)
+    shipper = models.ForeignKey(User, related_name="auctions", on_delete=models.CASCADE)
     ship_cost = models.DecimalField(max_digits=14, decimal_places=2, null=False)
     is_winner = models.BooleanField(null=False)
     active = models.BooleanField(null=True)

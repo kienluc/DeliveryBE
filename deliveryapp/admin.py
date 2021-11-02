@@ -38,9 +38,11 @@ class ProductAdmin(admin.ModelAdmin):
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'first_name', 'last_name', 'gender', 'email', 'phone', 'avatar_review',
-                    'date_joined']
+                    'date_joined', 'is_shipper']
     search_fields = ['first_name', 'last_name', 'phone', 'username', 'gender', 'email']
+    list_per_page = 5
     readonly_fields = ['avatar_review']
+    list_filter = ['is_shipper']
 
     def avatar_review(self, user):
         return mark_safe(
@@ -48,7 +50,7 @@ class UserAdmin(admin.ModelAdmin):
 
 
 class ShipperAdmin(admin.ModelAdmin):
-    list_display = [ 'shipper_name', 'id_number', 'gender', 'email', 'shipper_phone', 'account', 'date_joined']
+    list_display = [ 'shipper_name', 'id_number', 'gender', 'email', 'shipper_phone', 'date_joined', 'account']
     search_fields = ['id_number', 'account__first_name', 'account__last_name', 'account__email',
                      'account__phone']
     readonly_fields = ['front_id', 'back_id']
@@ -78,7 +80,7 @@ class ShipperAdmin(admin.ModelAdmin):
 
 
 class AuctionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'post', 'shipper_name', 'ship_cost', 'is_winner', 'active']
+    list_display = ['id', 'post', 'shipper_name', 'ship_cost', 'is_winner', 'active', 'created_date', 'updated_date']
     search_fields = ['shipper__fisrt_name', 'shipper__last_name', 'ship_cost', 'active']
 
     def shipper_name(self, auction):
@@ -90,6 +92,8 @@ class OrderAdmin(admin.ModelAdmin):
                     'product_cate', 'service_cate', 'total_price', 'pay_method', 'status']
     search_fields = ['customer__first_name', 'customer__last_name', 'shipper__first_name', 'shipper__last_name',
                      'ship_address', 'status']
+    list_per_page = 5
+    list_filter = ['pay_method', 'status', 'service_cate', 'product_cate']
 
     def product_cate(self, order):
         return "%s " % order.product_cate.name
@@ -110,15 +114,17 @@ class OrderDetailAdmin(admin.ModelAdmin):
 
 
 class OrderPostAdmin(admin.ModelAdmin):
-    list_display = ['id', 'creator_name', 'content', 'pickup_address', 'ship_address', 'created_date', 'is_checked']
+    list_display = ['id', 'creator_name', 'content', 'pickup_address', 'ship_address',
+                    'product_cate','service_cate', 'created_date', 'is_checked']
     search_fields = ['creator', 'ship_address', 'creator__first_name', 'creator__last_name']
+    list_filter = ['is_checked']
 
     def creator_name(self, orderpost):
         return "%s %s" % (orderpost.creator.first_name, orderpost.creator.last_name)
 
 
 class RatingAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'shipper_name', 'content', 'rate']
+    list_display = ['id', 'customer_name', 'shipper_name', 'content', 'rate']
     search_fields = ['customer__first_name', 'customer__last_name', 'shipper__first_name', 'shipper__last_name',
                      'rate']
 

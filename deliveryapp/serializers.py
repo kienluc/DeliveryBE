@@ -38,8 +38,9 @@ class UserSerializer(ModelSerializer):
 
 class ShipperSerializer(ModelSerializer):
     class Meta:
-        model = Shipper
-        fields = ['account', 'id_number', 'id_front_image', 'id_back_image']
+        model = User
+        fields = ['first_name', 'last_name', 'phone', 'email', 'gender', 'avatar']
+        read_only_fields = ["date_joined", 'id', 'username']
 
 
 # Product Serializer
@@ -60,34 +61,43 @@ class OrderSerializer(ModelSerializer):
         fields = ['customer', 'shipper', 'pickup_address', 'ship_address',
                   'total_price', 'pay_method', 'status', 'product_cate', 'service_cate']
 
+
 # Order Post Serializer
 
 
 class OrderPostSerializer(ModelSerializer):
-    creator = UserSerializer(required=True)
+    # creator = UserSerializer(required=True)
 
     class Meta:
         model = OrderPost
-        fields = ['creator', 'pickup_address', 'ship_address', 'content']
+        fields = ['creator', 'pickup_address', 'ship_address',
+                  'content', 'service_cate',
+                  'product_cate', 'active']
+        read_only_fields = ['id', 'customer', 'active', "created_date", 'update_date']
 
 
 # Auction Serializer
 
+
 class AuctionSerializer(ModelSerializer):
-    shipper = UserSerializer(required=True)
-    post = OrderPostSerializer(required=True)
+    #  shipper = UserSerializer(required=True)
+    #  post = OrderPostSerializer(required=True)
 
     class Meta:
         model = Auction
-        fields = ['ship_cost', 'post', 'shipper', 'is_winner']
+        fields = ['ship_cost', 'post', 'shipper', 'is_winner', 'created_date', 'updated_date']
+
 
 # Rating Serializer
-
-
-class RatingSerializer(ModelSerializer):
-    customer = UserSerializer(required=True)
-    shipper = UserSerializer(required=True)
-
+class RatingCreateSerializer(ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['customer', 'shipper', 'content', 'rate']
+        fields = "__all__"
+        read_only_fields = ['id', 'customer', 'shipper']
+
+
+class RatingSerializer(RatingCreateSerializer):
+    class Meta:
+        model = RatingCreateSerializer.Meta.model
+        fields = RatingCreateSerializer.Meta.fields
+        read_only_fields = ['id', 'customer', 'shipper']

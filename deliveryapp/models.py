@@ -14,6 +14,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=10, null=True)
     gender = models.CharField(max_length=15, choices=sex, default=0)
     avatar = models.ImageField(upload_to='avatar/%Y/%m')
+    is_shipper = models.BooleanField(default=False)
 
     def __str__(self):
         return "username: {}".format(self.username)
@@ -72,7 +73,7 @@ class Order(models.Model):
     ]
     customer = models.ForeignKey(User, related_name="customer_name", on_delete=models.PROTECT)
     shipper = models.ForeignKey(User, related_name="shipper_name", on_delete=models.PROTECT)
-    auction = models.ForeignKey('Auction', on_delete=models.PROTECT)
+    auction = models.ForeignKey('Auction', on_delete=models.PROTECT, null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     pickup_address = models.CharField(max_length=250, null=True, blank=True)
     ship_address = models.CharField(max_length=250, null=True, blank=True)
@@ -109,6 +110,8 @@ class OrderDetail(models.Model):
 
 class OrderPost(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    product_cate = models.ForeignKey(ProductCategory, on_delete=models.PROTECT, null=True)
+    service_cate = models.ForeignKey(Service, on_delete=models.PROTECT, null=True)
     active = models.BooleanField(default=True)
     content = models.TextField(null=True)
     pickup_address = models.CharField(max_length=250, null=False, blank=True)
@@ -134,8 +137,10 @@ class Auction(models.Model):
     post = models.ForeignKey(OrderPost, related_name="auctions", on_delete=models.CASCADE)
     shipper = models.ForeignKey(User, related_name="auctions", on_delete=models.CASCADE)
     ship_cost = models.DecimalField(max_digits=14, decimal_places=2, null=False)
-    is_winner = models.BooleanField(null=False)
-    active = models.BooleanField(null=True)
+    is_winner = models.BooleanField(default=False, null=True)
+    active = models.BooleanField(null=True, default=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "Shipper: {}\nCost: {}".format(self.shipper.first_name + " " + self.shipper.last_name,
@@ -146,6 +151,8 @@ class Rating(models.Model):
     class Meta:
         unique_together = ['customer', 'shipper']
 
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     customer = models.ForeignKey(User, related_name="customer_rating", on_delete=models.PROTECT, default=None)
     shipper = models.ForeignKey(User, related_name="rating_shipper", on_delete=models.PROTECT, default=None)
     content = models.TextField(null=True)

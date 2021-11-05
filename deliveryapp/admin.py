@@ -40,7 +40,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ['id', 'username', 'first_name', 'last_name', 'gender', 'email', 'phone', 'avatar_review',
                     'date_joined', 'is_shipper']
     search_fields = ['first_name', 'last_name', 'phone', 'username', 'gender', 'email']
-    list_per_page = 5
+   # list_per_page = 5
     readonly_fields = ['avatar_review']
     list_filter = ['is_shipper']
 
@@ -92,7 +92,7 @@ class OrderAdmin(admin.ModelAdmin):
                     'product_cate', 'service_cate', 'total_price', 'pay_method', 'status']
     search_fields = ['customer__first_name', 'customer__last_name', 'shipper__first_name', 'shipper__last_name',
                      'ship_address', 'status']
-    list_per_page = 5
+    # list_per_page = 5
     list_filter = ['pay_method', 'status', 'service_cate', 'product_cate']
 
     def product_cate(self, order):

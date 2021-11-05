@@ -14,6 +14,13 @@ class User(AbstractUser):
     phone = models.CharField(max_length=10, null=True)
     gender = models.CharField(max_length=15, choices=sex, default=0)
     avatar = models.ImageField(upload_to='avatar/%Y/%m')
+    choice = models.PositiveIntegerField(default=0, null=False,
+                                         validators=[
+                                             MaxValueValidator(
+                                                 limit_value=2, message="Chọn nếu bạn là shipper"),
+                                             MinValueValidator(
+                                                 limit_value=1, message="Chọn nếu bạn là khách hàng")
+                                         ])
     is_shipper = models.BooleanField(default=False)
 
     def __str__(self):

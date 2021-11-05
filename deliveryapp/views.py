@@ -37,13 +37,39 @@ class UserViewSet(viewsets.ViewSet,
     def current_user(self, request):
         return Response(self.get_serializer(request.user).data, status=status.HTTP_200_OK)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        headers = self.get_success_headers(instance)
+        return Response(UserSerializer(instance).data, status=status.HTTP_201_CREATED, headers=headers)
 
-class ShipperViewSet(viewsets.ViewSet, generics.ListAPIView, generics.RetrieveAPIView):
+    def update(self, request, *args, **kwargs):
+        if str(request.user.id) == kwargs.get("pk"):
+            return super().update(request, *args, **kwargs)
+        raise PermissionDenied()
+
+
+class ShipperViewSet(viewsets.ViewSet,
+                     generics.CreateAPIView,
+                     generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
 
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = ShipperSerializer
+    # permission_classes = [permissions.IsAuthenticated]
+    # serializer_class = ShipperSerializer
     pagination_class = BasePaginator
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [permissions.AllowAny(), ]
+
+        return [permissions.IsAuthenticated(), ]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return SaveShipperSerializer
+
+        return ShipperSerializer
 
     def get_queryset(self):
         group = Group.objects.get(name='shipper')
@@ -169,6 +195,7 @@ class OrderPostViewSet(viewsets.ModelViewSet):
 
         return Response(data=OrderPostSerializer(post, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+
     """ 
         All action above and add-auction below has been checked
     """
@@ -224,7 +251,7 @@ class AuctionViewSet(viewsets.ViewSet,
 
     def partial_update(self, request, *args, **kwargs):
         auction = self.get_object()
-        if not auction.post.auctions.filter(is_winner=True).exists()\
+        if not auction.post.auctions.filter(is_winner=True).exists() \
                 and request.user.id == auction.shipper.id:
             return super().partial_update(request, *args, **kwargs)
 
@@ -322,7 +349,9 @@ class RatingViewSet(viewsets.ViewSet,
 class OauthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
+
+
 # def index(request):
-#  return render(request, template_name='index.html', context={
-#     'name': 'LUC TUAN KIEN'
-# })
+  #  return render(request, template_name='index.html', context={
+   #     'name': 'LUC TUAN KIEN'
+   # })

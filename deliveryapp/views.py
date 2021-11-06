@@ -135,7 +135,10 @@ class OrderViewSet(viewsets.ViewSet,
         return [permissions.AllowAny(), ]
 
     def create(self, request, *args, **kwargs):
-        pass
+        if request.user.groups.filter(name='customer').exists():
+            return super().create(request, *args, **kwargs)
+
+        raise PermissionDenied()
 
 
 # OrderPost View

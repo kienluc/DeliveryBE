@@ -115,10 +115,21 @@ class ProductCategoryViewSet(viewsets.ViewSet,
 
     # return [permissions.IsAuthenticated(), ]
 
+# Service View
+
+
+class ServiceViewSet(viewsets.ViewSet,
+                     generics.ListAPIView,
+                     generics.CreateAPIView,
+                     generics.RetrieveAPIView):
+    queryset = Service.objects.filter(active=True)
+    serializer_class = ServiceSerializer
 
 # Order  View
 
 # dừng tài đây -> tạo các api đặt đơn hàng
+
+
 class OrderViewSet(viewsets.ViewSet,
                    generics.ListAPIView,
                    generics.CreateAPIView,
@@ -126,7 +137,13 @@ class OrderViewSet(viewsets.ViewSet,
                    generics.UpdateAPIView):
     queryset = Order.objects.filter(active=True)
     pagination_class = BasePaginator
-    serializer_class = OrderSerializer
+    # serializer_class = OrderSerializer
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderCreateSerializer
+
+        return OrderSerializer
 
     def get_permissions(self):
         if self.action in ['create', 'update', 'partial_update']:
@@ -140,13 +157,31 @@ class OrderViewSet(viewsets.ViewSet,
 
         raise PermissionDenied()
 
+    @action(methods=['post'], detail=True, url_path='hide-order',
+            url_name='hide-order')
+    def hide_order(self, request, pk):
+        try:
+            order = Order.objects.get(pk=pk)
+            order.active = False
+            order.save()
+        except order.DoesNotExits:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data=OrderPostSerializer(order, context={'request': request}).data,
+                        status=status.HTTP_200_OK)
 
 # OrderPost View
 
 
 class OrderPostViewSet(viewsets.ModelViewSet):
     queryset = OrderPost.objects.filter(active=True)
-    serializer_class = OrderPostSerializer
+    # serializer_class = OrderPostSerializer
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderPostCreateSerializer
+
+        return OrderPostSerializer
 
     def get_permissions(self):
         if self.action in ['add-auction', 'create']:
@@ -270,7 +305,7 @@ class RatingViewSet(viewsets.ViewSet,
                     generics.RetrieveAPIView,
                     generics.UpdateAPIView):
     queryset = Rating.objects.all()
-    serializer_class = RatingSerializer
+    # serializer_class = RatingSerializer
     """ checked
     """
 

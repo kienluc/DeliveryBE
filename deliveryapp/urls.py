@@ -16,7 +16,7 @@ router.register('orders', views.OrderViewSet)
 router.register('order_posts', views.OrderPostViewSet)
 router.register('auctions', views.AuctionViewSet)
 router.register('ratings', views.RatingViewSet)
-
+router.register('services', views.ServiceViewSet)
 
 schema_view = get_schema_view(
     openapi.Info(

@@ -110,6 +110,18 @@ class OrderSerializer(ModelSerializer):
                   'total_price', 'pay_method', 'status', 'product_cate', 'service_cate']
 
 
+class OrderCreateSerializer(ModelSerializer):
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['status'] = Order.STATE[rep.get('status')][1] or None
+        rep['pay_method'] = Order.PAY_METHOD[rep.get('pay_method')][1] or None
+        return rep
+
+    class Meta:
+        model = Order
+        fields = ['id', 'customer', 'shipper', 'pickup_address', 'ship_address',
+                  'total_price', 'pay_method', 'status', 'product_cate', 'service_cate']
+
 # Order Post Serializer
 
 
@@ -124,6 +136,14 @@ class OrderPostSerializer(ModelSerializer):
         read_only_fields = ['id', 'creator', 'active', "created_date", 'update_date']
 
 
+class OrderPostCreateSerializer(ModelSerializer):
+    class Meta:
+        model = OrderPost
+        fields = ['creator', 'pickup_address', 'ship_address',
+                  'content', 'service_cate',
+                  'product_cate', 'active']
+        read_only_fields = ['id', 'creator', 'active', "created_date", 'update_date']
+
 # Auction Serializer
 
 
@@ -136,7 +156,15 @@ class AuctionSerializer(ModelSerializer):
         fields = ['ship_cost', 'post', 'shipper', 'is_winner', 'created_date', 'updated_date']
 
 
+class AuctionCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Auction
+        fields = ['ship_cost', 'post', 'shipper', 'is_winner', 'created_date', 'updated_date']
+
+
 # Rating Serializer
+
+
 class RatingCreateSerializer(ModelSerializer):
     class Meta:
         model = Rating

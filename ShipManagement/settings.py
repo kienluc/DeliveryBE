@@ -24,7 +24,8 @@ SECRET_KEY = 'django-insecure-_#2r$u&8w8luhxs8t)3r2-_4jux-koi+mtokxjnssa22k8m+92
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
 
@@ -38,7 +39,8 @@ INSTALLED_APPS = [
     'deliveryapp.apps.DeliveryappConfig',
     'rest_framework',
     'oauth2_provider',
-    'drf_yasg'
+    'drf_yasg',
+    'corsheaders'
 ]
 
 REST_FRAMEWORK = {
@@ -56,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = 'ShipManagement.urls'
@@ -138,9 +141,9 @@ OAUTH2_INFO = {
 }
 
 
-# OAUTH2_PROVIDER = {
-#     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'
-# }
+OAUTH2_PROVIDER = {
+     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore'
+}
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_USE_TLS = True

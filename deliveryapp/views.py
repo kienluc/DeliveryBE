@@ -37,12 +37,12 @@ class UserViewSet(viewsets.ViewSet,
     def current_user(self, request):
         return Response(self.get_serializer(request.user).data, status=status.HTTP_200_OK)
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        headers = self.get_success_headers(instance)
-        return Response(UserSerializer(instance).data, status=status.HTTP_201_CREATED, headers=headers)
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     instance = serializer.save()
+    #     headers = self.get_success_headers(instance)
+    #     return Response(UserSerializer(instance).data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         if str(request.user.id) == kwargs.get("pk"):
@@ -129,7 +129,7 @@ class OrderViewSet(viewsets.ViewSet,
     serializer_class = OrderSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'update', 'partial_update']:
             return [permissions.IsAuthenticated(), ]
 
         return [permissions.AllowAny(), ]

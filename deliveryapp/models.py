@@ -17,9 +17,9 @@ class User(AbstractUser):
     choice = models.PositiveIntegerField(default=0, null=False,
                                          validators=[
                                              MaxValueValidator(
-                                                 limit_value=2, message="Chọn nếu bạn là shipper"),
+                                                 limit_value=2, message="Chọn 2 nếu bạn là shipper"),
                                              MinValueValidator(
-                                                 limit_value=1, message="Chọn nếu bạn là khách hàng")
+                                                 limit_value=1, message="Chọn 1 nếu bạn là khách hàng")
                                          ])
     is_shipper = models.BooleanField(default=False)
 

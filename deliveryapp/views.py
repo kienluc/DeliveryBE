@@ -51,6 +51,7 @@ class UserViewSet(viewsets.ViewSet,
 
 
 class ShipperViewSet(viewsets.ViewSet,
+                     generics.ListAPIView,
                      generics.CreateAPIView,
                      generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
@@ -60,7 +61,7 @@ class ShipperViewSet(viewsets.ViewSet,
     pagination_class = BasePaginator
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ['create', 'list']:
             return [permissions.AllowAny(), ]
 
         return [permissions.IsAuthenticated(), ]
@@ -221,6 +222,20 @@ class OrderViewSet(viewsets.ViewSet,
 
         return Response(data=OrderPostSerializer(order, context={'request': request}).data,
                         status=status.HTTP_200_OK)
+
+# OrderDetail View
+
+
+class OrderDetailViewSet(viewsets.ViewSet,
+                         generics.RetrieveAPIView,
+                         generics.CreateAPIView):
+    queryset = OrderDetail.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrderDetailCreateSerializer
+
+        return OrderDetailSerializer
 
 # OrderPost View
 

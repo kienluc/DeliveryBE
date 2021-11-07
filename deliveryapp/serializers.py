@@ -60,11 +60,12 @@ class UserSerializer(ModelSerializer):
 class ShipperSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'phone', 'email', 'gender', 'avatar']
+        fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'gender', 'avatar']
         read_only_fields = ["date_joined", 'id', 'username']
 
 
 class SaveShipperSerializer(ModelSerializer):
+
     class Meta:
         model = Shipper
         fields = ['account', 'id_number', 'id_front_image', 'id_back_image']
@@ -121,6 +122,21 @@ class OrderCreateSerializer(ModelSerializer):
         model = Order
         fields = ['id', 'customer', 'shipper', 'pickup_address', 'ship_address',
                   'total_price', 'pay_method', 'status', 'product_cate', 'service_cate']
+
+
+# Order Detail Serializer
+class OrderDetailSerializer(ModelSerializer):
+    order = OrderSerializer()
+
+    class Meta:
+        model = OrderDetail
+        fields = ['order', 'customer_received', 'phone']
+
+
+class OrderDetailCreateSerializer(ModelSerializer):
+    class Meta:
+        model = OrderDetail
+        fields = ['order', 'customer_received', 'phone']
 
 # Order Post Serializer
 

@@ -194,11 +194,11 @@ class OrderViewSet(viewsets.ViewSet,
     #             return Response(order_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     #         raise PermissionDenied()
 
-    def retrieve(self, request, *args, **kwargs):
-        order = self.get_object()
-        if request.user.pk == order.customer.pk or request.user.pk == order.shipper.pk:
-           return super().retrieve(request, *args, **kwargs)
-        raise PermissionDenied()
+    # def retrieve(self, request, *args, **kwargs):
+    #     order = self.get_object()
+    #     if request.user.pk == order.customer.pk or request.user.pk == order.shipper.pk:
+    #        return super().retrieve(request, *args, **kwargs)
+    #     raise PermissionDenied()
 
     @action(methods=["PATCH"], detail=True, url_name='update-status', url_path='update-status')
     def update_status(self, request, *args, **kwargs):

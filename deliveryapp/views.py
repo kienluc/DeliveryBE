@@ -251,7 +251,7 @@ class OrderPostViewSet(viewsets.ModelViewSet):
         return OrderPostSerializer
 
     def get_permissions(self):
-        if self.action in ['add-auction', 'create']:
+        if self.action in ['add-auction', 'create', 'list']:
             return [permissions.IsAuthenticated(), ]
         """
             phân quyền:
@@ -318,12 +318,19 @@ class OrderPostViewSet(viewsets.ModelViewSet):
 
         raise ValidationError(detail="You are not shipper")
 
+    @action(methods=['get'], detail=True, url_path='show-auction', url_name='show-auctions')
+    def show_auction(self, request, pk):
+        if request.user == self.get_object().creator:
+            post = self.get_object()
+            auctions = post.auctions.filter(active=True)
+            return Response(AuctionSerializer(auctions, many=True).data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 # Auction View
 
 
 class AuctionViewSet(viewsets.ViewSet,
-                     # generics.ListAPIView,
+                     generics.ListAPIView,
                      generics.UpdateAPIView,
                      generics.DestroyAPIView,
                      generics.RetrieveAPIView):

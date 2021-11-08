@@ -146,9 +146,9 @@ class OrderPostSerializer(ModelSerializer):
 
     class Meta:
         model = OrderPost
-        fields = ['creator', 'pickup_address', 'ship_address',
+        fields = ['id', 'creator', 'pickup_address', 'ship_address',
                   'content', 'service_cate',
-                  'product_cate', 'active']
+                  'product_cate', 'active', 'customer_received', 'phone']
         read_only_fields = ['id', 'creator', 'active', "created_date", 'update_date']
 
 
@@ -157,8 +157,7 @@ class OrderPostCreateSerializer(ModelSerializer):
         model = OrderPost
         fields = ['creator', 'pickup_address', 'ship_address',
                   'content', 'service_cate',
-                  'product_cate', 'active']
-        read_only_fields = ['id', 'creator', 'active', "created_date", 'update_date']
+                  'product_cate', 'customer_received', 'phone']
 
 # Auction Serializer
 

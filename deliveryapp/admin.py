@@ -46,7 +46,7 @@ class UserAdmin(admin.ModelAdmin):
 
     def avatar_review(self, user):
         return mark_safe(
-            "<img src='/static/{img_url}' width='100px'/>".format(img_url=user.avatar.name))
+            "<img src='/{img_url}' width='100px'/>".format(img_url=user.avatar.name))
 
 
 class ShipperAdmin(admin.ModelAdmin):
@@ -72,11 +72,11 @@ class ShipperAdmin(admin.ModelAdmin):
 
     def front_id(self, shipper):
         return mark_safe(
-            "<img src='/static/{img_url}' width='100px'/>".format(img_url=shipper.id_front_image.name))
+            "<img src='/{img_url}' width='100px'/>".format(img_url=shipper.id_front_image.name))
 
     def back_id(self, shipper):
         return mark_safe(
-            "<img src='/static/{img_url}' width='100px'/>".format(img_url=shipper.id_back_image.name))
+            "<img src='/{img_url}' width='100px'/>".format(img_url=shipper.id_back_image.name))
 
 
 class AuctionAdmin(admin.ModelAdmin):
@@ -115,7 +115,7 @@ class OrderDetailAdmin(admin.ModelAdmin):
 
 class OrderPostAdmin(admin.ModelAdmin):
     list_display = ['id', 'creator_name', 'content', 'pickup_address', 'ship_address',
-                    'product_cate','service_cate', 'created_date', 'is_checked']
+                    'product_cate', 'service_cate', 'created_date', 'is_checked']
     search_fields = ['creator', 'ship_address', 'creator__first_name', 'creator__last_name']
     list_filter = ['is_checked']
 

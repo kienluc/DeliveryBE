@@ -13,8 +13,8 @@ class User(AbstractUser):
     last_name = models.CharField(max_length=30, null=True, blank=True)
     phone = models.CharField(max_length=10, null=True)
     gender = models.CharField(max_length=15, choices=sex, default=0)
-    avatar = models.ImageField(upload_to='avatar/%Y/%m')
-    choice = models.PositiveIntegerField(default=0, null=False,
+    avatar = models.ImageField(upload_to='static/avatar/%Y/%m')
+    choice = models.PositiveIntegerField(default=0, null=True,
                                          validators=[
                                              MaxValueValidator(
                                                  limit_value=2, message="Chọn 2 nếu bạn là shipper"),
@@ -30,8 +30,8 @@ class User(AbstractUser):
 class Shipper(models.Model):
     account = models.OneToOneField(User, related_name="shipper_account", on_delete=models.CASCADE, primary_key=True)
     id_number = models.CharField(max_length=12, null=False, unique=True)
-    id_front_image = models.ImageField(upload_to='identity/%Y/%m')
-    id_back_image = models.ImageField(upload_to='identity/%Y/%m')
+    id_front_image = models.ImageField(upload_to='static/identity/%Y/%m')
+    id_back_image = models.ImageField(upload_to='static/identity/%Y/%m')
 
     def __str__(self):
         return "Shipper ID: {}".format(self.id_number)
@@ -126,6 +126,8 @@ class OrderPost(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     is_checked = models.BooleanField(default=False)
+    customer_received = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=10, null=True)
 
     def __str__(self):
         return "Creator: {}\n Active: {}\nCreated date: {}\n Status: {}".format(

@@ -156,11 +156,19 @@ class OrderViewSet(viewsets.ViewSet,
         return OrderSerializer
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update']:
+        if self.action in ['create', 'update', 'partial_update', 'list']:
             return [permissions.IsAuthenticated(), ]
         # if self.action == "update-status":
         #     return [PermissionUpDateStatusOrder(),]
         return [permissions.AllowAny(), ]
+
+    def list(self, request, *args, **kwargs):
+        if request.user.groups.filter(name='customer').exists():
+            order = Order.objects.filter(customer_id=request.user.pk)
+        elif request.user.groups.filter(name='shipper').exists():
+            order = Order.objects.filter(shipper_id=request.user.pk)
+
+        return Response(OrderCreateSerializer(order, many=True).data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         if request.user.groups.filter(name='customer').exists():
@@ -205,7 +213,6 @@ class OrderViewSet(viewsets.ViewSet,
             order_detail = OrderDetail.objects.filter(order__id=pk)
             return Response(OrderDetailSerializer(order_detail, many=True).data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
-
 
 # OrderDetail View
 

@@ -168,7 +168,7 @@ class AuctionSerializer(ModelSerializer):
 
     class Meta:
         model = Auction
-        fields = ['ship_cost', 'post', 'shipper', 'is_winner', 'created_date', 'updated_date']
+        fields = ['id','ship_cost', 'post', 'shipper', 'is_winner', 'created_date', 'updated_date']
 
 
 class AuctionCreateSerializer(ModelSerializer):

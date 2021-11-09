@@ -142,7 +142,7 @@ class Auction(models.Model):
     class Meta:
         unique_together = ['post', 'shipper']
         ordering = ['post']
-
+        
     post = models.ForeignKey(OrderPost, related_name="auctions", on_delete=models.CASCADE)
     shipper = models.ForeignKey(User, related_name="auction_shipper", on_delete=models.CASCADE)
     ship_cost = models.DecimalField(max_digits=14, decimal_places=2, null=False)

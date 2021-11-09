@@ -37,12 +37,12 @@ class UserViewSet(viewsets.ViewSet,
     def current_user(self, request):
         return Response(self.get_serializer(request.user).data, status=status.HTTP_200_OK)
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     instance = serializer.save()
-    #     headers = self.get_success_headers(instance)
-    #     return Response(UserSerializer(instance).data, status=status.HTTP_201_CREATED, headers=headers)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        headers = self.get_success_headers(instance)
+        return Response(UserSerializer(instance).data, status=status.HTTP_201_CREATED, headers=headers)
 
     def update(self, request, *args, **kwargs):
         if str(request.user.id) == kwargs.get("pk"):
@@ -130,8 +130,6 @@ class ServiceViewSet(viewsets.ViewSet,
 
 # Order  View
 
-# dừng tài đây -> tạo các api đặt đơn hàng
-
 
 class OrderViewSet(viewsets.ViewSet,
                    generics.ListAPIView,
@@ -195,7 +193,7 @@ class OrderViewSet(viewsets.ViewSet,
     def update_status(self, request, *args, **kwargs):
         order = self.get_object()
         if request.user.groups.filter(name='shipper').exists() and request.user.id == order.shipper.id:
-            ser = OrderCreateSerializer(order, data={'status': request.data.get('status')}, partial=True)
+            ser = OrderSerializer(order, data={'status': request.data.get('status')}, partial=True)
             ser.is_valid(raise_exception=True)
             ser.save()
             header = self.get_success_headers(ser.data)
@@ -326,9 +324,9 @@ class OrderPostViewSet(viewsets.ModelViewSet):
 
         raise ValidationError(detail="You are not shipper")
 
-    @action(methods=['get'], detail=True, url_path='show-auction', url_name='show-auctions')
+    @action(methods=['get'], detail=True, url_path='show-auction', url_name='show-auction')
     def show_auction(self, request, pk):
-        if request.user == self.get_object().creator:
+        if request.user == self.get_object().creator or request.user.groups.filter(name='shipper').exists():
             post = self.get_object()
             auctions = post.auctions.filter(active=True)
             return Response(AuctionSerializer(auctions, many=True).data, status=status.HTTP_200_OK)
@@ -382,16 +380,10 @@ class AuctionViewSet(viewsets.ViewSet,
     #     return [PermissionAuction(),]
 
     def destroy(self, request, *args, **kwargs):
-        if request.user == self.get_object().shipper:
+        auction = self.get_object()
+        if not auction.post.auctions.filter(is_winner=True).exists() and request.user.id == auction.shipper.id:
             return super().destroy(request, *args, **kwargs)
-
-        return Response(status=status.HTTP_403_FORBIDDEN)
-
-    # def destroy(self, request, *args, **kwargs):
-    #     auction = self.get_object()
-    #     if not auction.post.auctions.filter(is_winner=True).exists() and request.user.id == auction.shipper.id:
-    #         return super().destroy(request, *args, **kwargs)
-    #     raise PermissionDenied()
+        raise PermissionDenied()
 
     def update(self, request, *args, **kwargs):
         """

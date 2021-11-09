@@ -17,9 +17,11 @@ class DeliveryAppAdminSite(admin.AdminSite):
     def delivery_stats(self, request):
         order_count = Order.objects.count()
         shipper_count = Shipper.objects.count()
+        customer_count = User.objects.filter(is_shipper=False).count()
         return TemplateResponse(request, 'admin/delivery-stats.html', {
             'order_count': order_count,
-            'shipper_count': shipper_count
+            'shipper_count': shipper_count,
+            'customer_count': customer_count
         })
 
 

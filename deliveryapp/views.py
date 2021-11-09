@@ -210,8 +210,7 @@ class OrderViewSet(viewsets.ViewSet,
         header = self.get_success_headers(ser.data)
         return Response(ser.data, status=status.HTTP_200_OK, headers=header)
 
-    @action(methods=['post'], detail=True, url_path='hide-order',
-            url_name='hide-order')
+    @action(methods=['post'], detail=True, url_path='hide-order', url_name='hide-order')
     def hide_order(self, request, pk):
         try:
             order = Order.objects.get(pk=pk)
@@ -223,6 +222,12 @@ class OrderViewSet(viewsets.ViewSet,
         return Response(data=OrderPostSerializer(order, context={'request': request}).data,
                         status=status.HTTP_200_OK)
 
+    @action(methods=['get'], detail=True, url_path='show-order-detail', url_name='show-order-detail')
+    def show_order_detail(self, request, pk):
+        if request.user == self.get_object().customer or request.user == self.get_object().shipper:
+            order_detail = OrderDetail.objects.filter(order__id=pk)
+            return Response(OrderDetailSerializer(order_detail, many=True).data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 # OrderDetail View
 
 

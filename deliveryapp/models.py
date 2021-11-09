@@ -107,7 +107,7 @@ class Order(models.Model):
 
 
 class OrderDetail(models.Model):
-    order = models.OneToOneField(Order, on_delete=models.CASCADE, primary_key=True)
+    order = models.OneToOneField(Order, related_name="order_detail", on_delete=models.CASCADE, primary_key=True)
     customer_received = models.CharField(max_length=100, null=True, blank=True)
     phone = models.CharField(max_length=10, null=True)
 

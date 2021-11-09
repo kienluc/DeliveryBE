@@ -80,8 +80,12 @@ class ShipperAdmin(admin.ModelAdmin):
 
 
 class AuctionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'post', 'shipper_name', 'ship_cost', 'is_winner', 'active', 'created_date', 'updated_date']
+    list_display = ['id', 'post_id', 'shipper_name', 'ship_cost', 'is_winner', 'active', 'created_date', 'updated_date']
     search_fields = ['shipper__fisrt_name', 'shipper__last_name', 'ship_cost', 'active']
+    list_filter = ['is_winner', 'post']
+
+    def post_id(self, auction):
+        return "%s " % auction.post.id
 
     def shipper_name(self, auction):
         return "%s %s" % (auction.shipper.first_name, auction.shipper.last_name)

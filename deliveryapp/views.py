@@ -116,6 +116,7 @@ class ProductCategoryViewSet(viewsets.ViewSet,
 
     # return [permissions.IsAuthenticated(), ]
 
+
 # Service View
 
 
@@ -125,6 +126,7 @@ class ServiceViewSet(viewsets.ViewSet,
                      generics.RetrieveAPIView):
     queryset = Service.objects.filter(active=True)
     serializer_class = ServiceSerializer
+
 
 # Order  View
 
@@ -137,6 +139,7 @@ class OrderViewSet(viewsets.ViewSet,
                    generics.RetrieveAPIView,
                    generics.UpdateAPIView):
     queryset = Order.objects.filter(active=True)
+
     # pagination_class = BasePaginator
     # serializer_class = OrderSerializer
 
@@ -165,50 +168,24 @@ class OrderViewSet(viewsets.ViewSet,
 
         raise PermissionDenied()
 
-    # def create(self, request, *args, **kwargs):
-    #     """
-    #     Trong phương thức này có ba việc là:
-    #             - thêm order,
-    #             - cập trạng thái is_checked = True cho post tương ứng,
-    #             - cập nhật trạng thái is_winner = True cho auction tương ứng
-    #     :param request:
-    #     :param args:
-    #     :param kwargs:
-    #     :return:
-    #     """
-    #     try:
-    #         auction = Auction.objects.get(pk=int(request.data.get('auction')))
-    #         print(auction.pk)
-    #     except:
-    #         raise ValidationError(detail="Auction field is invalid")
-    #     else:
-    #         if request.user.id == auction.post.creator.id and not auction.post.is_checked:
-    #             order_serializer = OrderCreateSerializer(data=request.data)
-    #             order_serializer.is_valid(raise_exception=True)
-    #             order_serializer.save(**{'active':True})
-    #             headers = self.get_success_headers(order_serializer.data)
-    #             post = OrderPost.objects.get(pk=auction.post.pk)
-    #             post.is_checked = True
-    #             post.save()
-    #             auction.is_winner = True
-    #             auction.save()
-    #             return Response(order_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    #         raise PermissionDenied()
-
     # def retrieve(self, request, *args, **kwargs):
     #     order = self.get_object()
     #     if request.user.pk == order.customer.pk or request.user.pk == order.shipper.pk:
-    #        return super().retrieve(request, *args, **kwargs)
+    #         return super().retrieve(request, *args, **kwargs)
     #     raise PermissionDenied()
 
     @action(methods=["PATCH"], detail=True, url_name='update-status', url_path='update-status')
     def update_status(self, request, *args, **kwargs):
-        order = self.get_object()
-        ser = OrderCreateSerializer(order, data={'status': request.data.get('status')}, partial=True)
-        ser.is_valid(raise_exception=True)
-        ser.save()
-        header = self.get_success_headers(ser.data)
-        return Response(ser.data, status=status.HTTP_200_OK, headers=header)
+        if request.user.groups.filter(name='shipper').exists():
+            order = self.get_object()
+            ser = OrderCreateSerializer(order, data={'status': request.data.get('status')}, partial=True)
+            ser.is_valid(raise_exception=True)
+            ser.save()
+            header = self.get_success_headers(ser.data)
+
+            return Response(ser.data, status=status.HTTP_200_OK, headers=header)
+
+        raise ValidationError("You are not shipper")
 
     @action(methods=['post'], detail=True, url_path='hide-order', url_name='hide-order')
     def hide_order(self, request, pk):
@@ -228,6 +205,8 @@ class OrderViewSet(viewsets.ViewSet,
             order_detail = OrderDetail.objects.filter(order__id=pk)
             return Response(OrderDetailSerializer(order_detail, many=True).data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+
 # OrderDetail View
 
 
@@ -242,11 +221,19 @@ class OrderDetailViewSet(viewsets.ViewSet,
 
         return OrderDetailSerializer
 
+    def get_permissions(self):
+        if self.action in ['retrieve']:
+            return [permissions.IsAuthenticated(), ]
+
+        return [permissions.AllowAny(), ]
+
+
 # OrderPost View
 
 
 class OrderPostViewSet(viewsets.ModelViewSet):
     queryset = OrderPost.objects.filter(active=True)
+
     # serializer_class = OrderPostSerializer
 
     def get_serializer_class(self):
@@ -331,6 +318,25 @@ class OrderPostViewSet(viewsets.ModelViewSet):
             return Response(AuctionSerializer(auctions, many=True).data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
+    @action(methods=['post'], detail=True, url_path='create-order', url_name='create-order')
+    def create_order(self, request, pk):
+        if request.user == self.get_object().creator:
+            post = self.get_object()
+            auc = post.auctions.filter(is_winner=True).first()
+            order = Order.objects.create(customer=post.creator,
+                                         shipper=auc.shipper,
+                                         pickup_address=post.pickup_address,
+                                         ship_address=post.ship_address,
+                                         total_price=auc.ship_cost,
+                                         product_cate=post.product_cate,
+                                         service_cate=post.service_cate)
+            post.is_checked = True
+            post.save()
+            return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
+
+        raise ValidationError(detail="Invalid")
+
+
 # Auction View
 
 
@@ -352,11 +358,24 @@ class AuctionViewSet(viewsets.ViewSet,
     #
     #     raise ValidationError(detail="You are not allowed to do this action")
 
+    # def get_permissions(self):
+    #     if self.action == "retrieve":
+    #         return [PermissionViewDetailAuction(),] #quyền xem chi tiết đấu giá - Người sở hữu bài
+    #     if self.action == "list":
+    #         return [PermissionViewListAuctionOfShipper(),] #quyền xem danh sách đấu giá - Người sở hữu bài đăng
+    #     return [PermissionAuction(),]
+
     def destroy(self, request, *args, **kwargs):
         if request.user == self.get_object().shipper:
             return super().destroy(request, *args, **kwargs)
 
         return Response(status=status.HTTP_403_FORBIDDEN)
+
+    # def destroy(self, request, *args, **kwargs):
+    #     auction = self.get_object()
+    #     if not auction.post.auctions.filter(is_winner=True).exists() and request.user.id == auction.shipper.id:
+    #         return super().destroy(request, *args, **kwargs)
+    #     raise PermissionDenied()
 
     def update(self, request, *args, **kwargs):
         """
@@ -389,6 +408,20 @@ class AuctionViewSet(viewsets.ViewSet,
                 and request.user.id == auction.shipper.id or request.user.id == auction.post.creator.id:
             return super().retrieve(request, *args, **kwargs)
         raise ValidationError(detail="Your are not allowed to do this action")
+
+    @action(methods=['post'], detail=True, url_path='confirm-auction', url_name='confirm-auction')
+    def confirm_auction(self, request, pk):
+        try:
+            auction = Auction.objects.get(pk=pk)
+            auction.is_winner = True
+            auction.save()
+
+        except auction.DoesNotExits:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(data=AuctionSerializer(auction, context={'request': request}).data,
+                        status=status.HTTP_200_OK)
+
 
 # Rating View
 
@@ -482,8 +515,7 @@ class OauthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
 
-
 # def index(request):
-  #  return render(request, template_name='index.html', context={
-   #     'name': 'LUC TUAN KIEN'
-   # })
+#  return render(request, template_name='index.html', context={
+#     'name': 'LUC TUAN KIEN'
+# })

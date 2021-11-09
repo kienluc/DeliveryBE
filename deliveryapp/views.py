@@ -182,18 +182,26 @@ class OrderViewSet(viewsets.ViewSet,
     #         return super().retrieve(request, *args, **kwargs)
     #     raise PermissionDenied()
 
-    @action(methods=["PATCH"], detail=True, url_name='update-status', url_path='update-status')
+    def partial_update(self, request, *args, **kwargs):
+        order = self.get_object()
+        if request.user.groups.filter(name='customer').exists() and request.user.id == order.customer.id:
+            return super().partial_update(request, *args, **kwargs)
+
+        raise ValidationError(detail="You are not allowed to change the order")
+    """
+    0-1-2 chưa giao - đang giao - đã giao
+    """
+    @action(methods=["PATCH"], detail=True, url_name='update-order', url_path='update-order')
     def update_status(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='shipper').exists():
-            order = self.get_object()
+        order = self.get_object()
+        if request.user.groups.filter(name='shipper').exists() and request.user.id == order.shipper.id:
             ser = OrderCreateSerializer(order, data={'status': request.data.get('status')}, partial=True)
             ser.is_valid(raise_exception=True)
             ser.save()
             header = self.get_success_headers(ser.data)
 
             return Response(ser.data, status=status.HTTP_200_OK, headers=header)
-
-        raise ValidationError("You are not shipper")
+        raise ValidationError("You are not shipper of this order")
 
     @action(methods=['post'], detail=True, url_path='hide-order', url_name='hide-order')
     def hide_order(self, request, pk):
@@ -213,6 +221,7 @@ class OrderViewSet(viewsets.ViewSet,
             order_detail = OrderDetail.objects.filter(order__id=pk)
             return Response(OrderDetailSerializer(order_detail, many=True).data, status=status.HTTP_200_OK)
         return Response(status=status.HTTP_403_FORBIDDEN)
+
 
 # OrderDetail View
 

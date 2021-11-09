@@ -168,7 +168,7 @@ class OrderViewSet(viewsets.ViewSet,
         elif request.user.groups.filter(name='shipper').exists():
             order = Order.objects.filter(shipper_id=request.user.pk)
 
-        return Response(OrderCreateSerializer(order, many=True).data, status=status.HTTP_200_OK)
+        return Response(OrderSerializer(order, many=True).data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         if request.user.groups.filter(name='customer').exists():

@@ -58,7 +58,7 @@ class ShipperViewSet(viewsets.ViewSet,
 
     # permission_classes = [permissions.IsAuthenticated]
     # serializer_class = ShipperSerializer
-    pagination_class = BasePaginator
+    # pagination_class = BasePaginator
 
     def get_permissions(self):
         if self.action in ['create', 'list']:
@@ -280,6 +280,13 @@ class OrderPostViewSet(viewsets.ModelViewSet):
             return super().retrieve(request, *args, **kwargs)
         raise PermissionDenied()
 
+    def partial_update(self, request, *args, **kwargs):
+        post = self.get_object()
+        if request.user.groups.filter(name='customer').exists() and request.user.id == post.creator.id:
+            return super().partial_update(request, *args, **kwargs)
+
+        raise ValidationError(detail="You are not allowed to change the post")
+
     def destroy(self, request, *args, **kwargs):
         """
             chỉ user tạo bài được xóa
@@ -289,7 +296,7 @@ class OrderPostViewSet(viewsets.ModelViewSet):
         :return:
         """
         post = self.get_object()
-        if not post.auctions.filter(is_winner=True).exists() and post.creator == request.user:
+        if not post.auctions.filter(is_winner=True).exists() and post.creator.id == request.user.id:
             return super().destroy(request, *args, **kwargs)
 
         raise PermissionDenied()
@@ -319,7 +326,8 @@ class OrderPostViewSet(viewsets.ModelViewSet):
             auc = Auction.objects.create(post=self.get_object(),
                                          shipper=request.user,
                                          ship_cost=request.data.get('ship_cost'))
-
+            post.creator.email_user(subject="[Delivery][New Auction]",
+                                    message='Bài đăng của bạn có một đấu giá mới')
             return Response(AuctionSerializer(auc).data, status=status.HTTP_201_CREATED)
 
         raise ValidationError(detail="You are not shipper")
@@ -346,6 +354,9 @@ class OrderPostViewSet(viewsets.ModelViewSet):
                                          service_cate=post.service_cate)
             post.is_checked = True
             post.save()
+            auc.shipper.email_user(subject="[Delivery][Auction Success]",
+                                   message='Bạn là người đấu giá thắng - hãy truy cập hệ thống để kiểm tra danh sách '
+                                           'đơn hàng')
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
         raise ValidationError(detail="Invalid")

@@ -1,17 +1,38 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from rest_framework import serializers
+import string
 
 
 # Create your models here.
 
 
+def validate_info(info):
+    for n in info:
+        if n.isdigit():
+            raise serializers.ValidationError("Can't include the number in your name")
+    if len(info) == 0:
+        raise serializers.ValidationError("Fill required")
+    return info
+
+
+def validate_phone(phone):
+    if len(phone) != 10:
+        raise serializers.ValidationError("Phone number invalid")
+    for n in phone:
+        if n.isalpha():
+            raise serializers.ValidationError("Phone is a numberic")
+
+    return phone
+
+
 class User(AbstractUser):
     sex = (("Male", 'Male'), ("Female", 'Female'), ("Other", 'Other'))
 
-    first_name = models.CharField(max_length=30, null=True, blank=True)
-    last_name = models.CharField(max_length=30, null=True, blank=True)
-    phone = models.CharField(max_length=10, null=True)
+    first_name = models.CharField(max_length=30, null=True, validators=[validate_info])
+    last_name = models.CharField(max_length=30, null=True, validators=[validate_info])
+    phone = models.CharField(max_length=10, null=True, validators=[validate_phone])
     gender = models.CharField(max_length=15, choices=sex, default=0)
     avatar = models.ImageField(upload_to='static/avatar/%Y/%m')
     choice = models.PositiveIntegerField(default=0, null=True,
@@ -27,9 +48,16 @@ class User(AbstractUser):
         return "username: {}".format(self.username)
 
 
+def validate_id(id_number):
+    for n in id_number:
+        if n.isalpha():
+            raise serializers.ValidationError("Id is a numberic")
+    return id_number
+
+
 class Shipper(models.Model):
     account = models.OneToOneField(User, related_name="shipper_account", on_delete=models.CASCADE, primary_key=True)
-    id_number = models.CharField(max_length=12, null=False, unique=True)
+    id_number = models.CharField(max_length=12, null=False, unique=True, validators=[validate_id])
     id_front_image = models.ImageField(upload_to='static/identity/%Y/%m')
     id_back_image = models.ImageField(upload_to='static/identity/%Y/%m')
 
@@ -116,6 +144,9 @@ class OrderDetail(models.Model):
 
 
 class OrderPost(models.Model):
+    class Meta:
+        ordering = ['created_date']
+
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     product_cate = models.ForeignKey(ProductCategory, on_delete=models.PROTECT, null=True)
     service_cate = models.ForeignKey(Service, on_delete=models.PROTECT, null=True)
@@ -141,8 +172,8 @@ class OrderPost(models.Model):
 class Auction(models.Model):
     class Meta:
         unique_together = ['post', 'shipper']
-        ordering = ['post']
-        
+        ordering = ['post', 'created_date']
+
     post = models.ForeignKey(OrderPost, related_name="auctions", on_delete=models.CASCADE)
     shipper = models.ForeignKey(User, related_name="auction_shipper", on_delete=models.CASCADE)
     ship_cost = models.DecimalField(max_digits=14, decimal_places=2, null=False)
@@ -159,6 +190,7 @@ class Auction(models.Model):
 class Rating(models.Model):
     class Meta:
         unique_together = ['customer', 'shipper']
+        ordering = ['created_date', 'updated_date']
 
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)

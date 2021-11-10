@@ -6,6 +6,11 @@ import string
 
 
 # Create your models here.
+def validate_number(num):
+    for n in num:
+        if n.isalpha():
+            raise serializers.ValidationError("Invalid")
+    return num
 
 
 def validate_info(info):
@@ -28,12 +33,17 @@ def validate_phone(phone):
 
 
 class User(AbstractUser):
-    sex = (("Male", 'Male'), ("Female", 'Female'), ("Other", 'Other'))
+    Male, Female, Other = range(3)
+    SEX = [
+        (Male, 'NAM'),
+        (Female, 'NỮ'),
+        (Other, 'KHÁC')
+    ]
 
     first_name = models.CharField(max_length=30, null=True, validators=[validate_info])
     last_name = models.CharField(max_length=30, null=True, validators=[validate_info])
     phone = models.CharField(max_length=10, null=True, validators=[validate_phone])
-    gender = models.CharField(max_length=15, choices=sex, default=0)
+    gender = models.CharField(max_length=15, choices=SEX, default=Male)
     avatar = models.ImageField(upload_to='static/avatar/%Y/%m')
     choice = models.PositiveIntegerField(default=0, null=True,
                                          validators=[
@@ -137,7 +147,7 @@ class Order(models.Model):
 class OrderDetail(models.Model):
     order = models.OneToOneField(Order, related_name="order_detail", on_delete=models.CASCADE, primary_key=True)
     customer_received = models.CharField(max_length=100, null=True, blank=True)
-    phone = models.CharField(max_length=10, null=True)
+    phone = models.CharField(max_length=10, null=True, validators=[validate_phone])
 
     def __str__(self):
         return "Order Detail - Order ID {}".format(self.order.id)
@@ -158,7 +168,7 @@ class OrderPost(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
     is_checked = models.BooleanField(default=False)
     customer_received = models.CharField(max_length=100, null=True, blank=True)
-    phone = models.CharField(max_length=10, null=True)
+    phone = models.CharField(max_length=10, null=True, validators=[validate_phone])
 
     def __str__(self):
         return "Creator: {}\n Active: {}\nCreated date: {}\n Status: {}".format(

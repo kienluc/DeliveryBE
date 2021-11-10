@@ -14,6 +14,10 @@ from rest_framework import serializers
 
 class UserSerializer(ModelSerializer):
     #   choice = serializers.IntegerField(max_value=2, min_value=1)
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep['gender'] = User.SEX[rep.get('SEX')][1] or None
+        return rep
 
     class Meta:
         model = User
@@ -143,6 +147,8 @@ class OrderDetailCreateSerializer(ModelSerializer):
 
 class OrderPostSerializer(ModelSerializer):
     creator = UserSerializer()
+    service_cate = ServiceSerializer()
+    product_cate = ProductCategorySerializer()
 
     class Meta:
         model = OrderPost
@@ -184,17 +190,16 @@ class RatingCreateSerializer(ModelSerializer):
     class Meta:
         model = Rating
         fields = "__all__"
-        read_only_fields = ['id', 'customer', 'shipper']
 
 
-class RatingSerializer(RatingCreateSerializer):
+class RatingSerializer(ModelSerializer):
     customer = UserSerializer()
     shipper = UserSerializer()
 
     class Meta:
-        model = RatingCreateSerializer.Meta.model
-        fields = RatingCreateSerializer.Meta.fields
-        read_only_fields = ['id', 'customer', 'shipper']
+        model = Rating
+        fields = "__all__"
+
 
 
 

@@ -197,8 +197,11 @@ class OrderViewSet(viewsets.ViewSet,
             ser.is_valid(raise_exception=True)
             ser.save()
             header = self.get_success_headers(ser.data)
-
+            if order.status == 2:
+                order.customer.email_user(subject="[Delivery][Order ship completely]",
+                                          message='Xác nhận đơn hàng mã đơn "{}" của bạn đã được giao').format(order.id)
             return Response(ser.data, status=status.HTTP_200_OK, headers=header)
+
         raise ValidationError("You are not shipper of this order")
 
     @action(methods=['post'], detail=True, url_path='hide-order', url_name='hide-order')
@@ -447,9 +450,7 @@ class AuctionViewSet(viewsets.ViewSet,
 
 class RatingViewSet(viewsets.ViewSet,
                     generics.CreateAPIView,
-                    generics.ListAPIView,
-                    generics.RetrieveAPIView,
-                    generics.UpdateAPIView):
+                    generics.ListAPIView):
     queryset = Rating.objects.all()
     # serializer_class = RatingSerializer
     """ checked
@@ -464,6 +465,7 @@ class RatingViewSet(viewsets.ViewSet,
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return RatingSerializer
+
         return RatingCreateSerializer
 
     def get_queryset(self):
@@ -490,7 +492,7 @@ class RatingViewSet(viewsets.ViewSet,
 
         if order.exists():
             if order.first().customer == request.user:
-                ser = RatingSerializer(data=request.data)
+                ser = RatingCreateSerializer(data=request.data)
                 ser.is_valid(raise_exception=True)
                 try:
                     ser.save(**{'customer': request.user,
@@ -501,33 +503,35 @@ class RatingViewSet(viewsets.ViewSet,
                 return Response(ser.data, status=status.HTTP_201_CREATED, headers=headers)
 
         return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def update(self, request, *args, **kwargs):
-        rate = self.get_object()
-        if request.user.pk == rate.customer.pk:
-            partial = kwargs.pop('partial', False)
-            instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-
-            if getattr(instance, '_prefetched_objects_cache', None):
-                # If 'prefetch_related' has been applied to a queryset, we need to
-                # forcibly invalidate the prefetch cache on the instance.
-                instance._prefetched_objects_cache = {}
-
-            return Response(serializer.data)
-        raise PermissionDenied()
-
-    def perform_update(self, serializer):
-        serializer.save()
-
-    def partial_update(self, request, *args, **kwargs):
-        rate = self.get_object()
-        if request.user.pk == rate.customer.pk:
-            kwargs['partial'] = True
-            return self.update(request, *args, **kwargs)
-        raise PermissionDenied()
+    """
+        đánh giá 1 lần - không sửa
+    """
+    # def update(self, request, *args, **kwargs):
+    #     rate = self.get_object()
+    #     if request.user.pk == rate.customer.pk:
+    #         partial = kwargs.pop('partial', False)
+    #         instance = self.get_object()
+    #         serializer = self.get_serializer(instance, data=request.data, partial=partial)
+    #         serializer.is_valid(raise_exception=True)
+    #         self.perform_update(serializer)
+    #
+    #         if getattr(instance, '_prefetched_objects_cache', None):
+    #             # If 'prefetch_related' has been applied to a queryset, we need to
+    #             # forcibly invalidate the prefetch cache on the instance.
+    #             instance._prefetched_objects_cache = {}
+    #
+    #         return Response(serializer.data)
+    #     raise PermissionDenied()
+    #
+    # def perform_update(self, serializer):
+    #     serializer.save()
+    #
+    # def partial_update(self, request, *args, **kwargs):
+    #     rate = self.get_object()
+    #     if request.user.pk == rate.customer.pk:
+    #         kwargs['partial'] = True
+    #         return self.update(request, *args, **kwargs)
+    #     raise PermissionDenied()
 
 
 class OauthInfo(APIView):

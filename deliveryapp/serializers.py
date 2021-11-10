@@ -14,10 +14,6 @@ from rest_framework import serializers
 
 class UserSerializer(ModelSerializer):
     #   choice = serializers.IntegerField(max_value=2, min_value=1)
-    def to_representation(self, instance):
-        rep = super().to_representation(instance)
-        rep['gender'] = User.SEX[rep.get('SEX')][1] or None
-        return rep
 
     class Meta:
         model = User

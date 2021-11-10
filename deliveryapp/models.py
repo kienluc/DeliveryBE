@@ -33,17 +33,12 @@ def validate_phone(phone):
 
 
 class User(AbstractUser):
-    Male, Female, Other = range(3)
-    SEX = [
-        (Male, 'NAM'),
-        (Female, 'NỮ'),
-        (Other, 'KHÁC')
-    ]
+    sex = (("Male", 'Male'), ("Female", 'Female'), ("Other", 'Other'))
 
     first_name = models.CharField(max_length=30, null=True, validators=[validate_info])
     last_name = models.CharField(max_length=30, null=True, validators=[validate_info])
     phone = models.CharField(max_length=10, null=True, validators=[validate_phone])
-    gender = models.CharField(max_length=15, choices=SEX, default=Male)
+    gender = models.CharField(max_length=15, choices=sex, default=0)
     avatar = models.ImageField(upload_to='static/avatar/%Y/%m')
     choice = models.PositiveIntegerField(default=0, null=True,
                                          validators=[

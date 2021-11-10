@@ -199,7 +199,7 @@ class OrderViewSet(viewsets.ViewSet,
             header = self.get_success_headers(ser.data)
             if order.status == 2:
                 order.customer.email_user(subject="[Delivery][Order ship completely]",
-                                          message='Xác nhận đơn hàng mã đơn "{}" của bạn đã được giao').format(order.id)
+                                          message='Xác nhận đơn hàng của bạn đã được giao')
             return Response(ser.data, status=status.HTTP_200_OK, headers=header)
 
         raise ValidationError("You are not shipper of this order")

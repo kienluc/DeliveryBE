@@ -8,59 +8,56 @@
       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js"></script>
     </head>
     {% if user.is_active and user.is_staff %}
-        <h1 class="text-center text-danger">TRANG THỐNG KÊ TỔNG QUAN</h1>
-        <div class="flex">
-            <h3><a href="order-stats/">Thống kê đơn hàng></a></h3>
+        <form>
+            <input type="button" value="<Back previous page " onclick="history.back()">
+        </form>
+        <h1 class="text-center text-danger">Thống kê đánh giá</h1>
+        <div align="center" class="flex">
+            <table class="table table-responsive" >
+                <tr class="text-center">
+                    <th>Điểm đánh giá</th>
+                    <th>Số lượt đánh giá</th>
+                </tr>
+                {% for p in rates %}
+                    <tr class="text-center">
+                        <td> {{ p.rate }} </td>
+                        <td> {{ p.quantity }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
         </div>
-        <br/>
         <div>
-            <h3><a href="rating-stats/">Thống kê đánh giá></a></h3>
+            <canvas id="ratingChart" width="300" height="50"></canvas>
         </div>
-        <br/>
-        {% for p in total %}
-            <h2>Doanh thu: {{ p.total }} VNĐ</h2>
-        {% endfor %}
-        <div>
-            <canvas id="generalChart" width="200" height="50"></canvas>
-        </div>
-
         {%block scripts%}
         <script>
 
             let a = [
-                {{ customer_count }},
-                {{ shipper_count }},
                 {{ order_count }},
-                {{ post_count }},
-                {{ auction_count }},
+                {{ shipper_count }},
                 {{ rate_count }}
             ]
-            const ctx = document.getElementById('generalChart').getContext('2d');
+            const ctx = document.getElementById('ratingChart').getContext('2d');
             const generalChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Khách hàng', 'Shipper', 'Đơn hàng', 'Bài đăng đấu giá', 'Đấu giá', 'Đánh giá cộng đồng'],
+                    labels: ['Đơn hàng', 'Shipper', 'Đánh giá'],
                     datasets: [{
                         label: '',
                         data: a,
                         backgroundColor: [
                             'rgba(240, 67, 160, 0.2)',
                             'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 255, 26, 0.2)',
-                            'rgba(123, 132, 192, 0.2)',
-                            'rgba(150, 50, 255, 0.2)',
-                            'rgba(100, 200, 64, 0.2)'
+                            'rgba(255, 255, 26, 0.2)'
                         ],
                         borderColor: [
                             'rgba(240, 67, 160, 1)',
                             'rgba(54, 162, 235, 1)',
-                            'rgba(200, 20, 10, 1)',
-                            'rgba(123, 132, 192, 1)',
-                            'rgba(150, 50, 255, 1)',
-                            'rgba(100, 200, 64, 1)'
+                            'rgba(200, 20, 10, 1)'
                         ],
                         borderWidth: 1
                     }]
@@ -75,19 +72,10 @@
             });
         </script>
         {% endblock scripts%}
-        <div>
-            <h2>Tổng khách hàng: {{ customer_count }}</span></h2>
+         <div>
             <h2>Đội ngũ shipper: {{ shipper_count }}</h2>
             <h2>Tổng đơn hàng hiện tại: {{ order_count }}</h2>
-            <h2>Tổng bài đăng đấu giá chưa hoàn tất: {{ post_count }}</h2>
-            <h2>Tổng lượt đấu giá của shipper: {{ auction_count }}</h2>
             <h2>Tổng lượt đánh giá của cộng đồng: {{ rate_count }}</h2>
-
-
-
         </div>
-
-
-
     {% endif %}
 {% endblock %}

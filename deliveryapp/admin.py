@@ -1,7 +1,10 @@
 from django.contrib import admin
+from django.db.models import Sum
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.urls import path
+from django.views.generic import TemplateView
+
 from .models import *
 from django.contrib.auth.models import Permission, Group
 
@@ -11,18 +14,82 @@ class DeliveryAppAdminSite(admin.AdminSite):
 
     def get_urls(self):
         return [
-                   path('delivery-stats/', self.delivery_stats)
+                   path('delivery-stats/', self.delivery_stats),
+                   path('delivery-stats/order-stats/', self.order_stats),
+                   path('delivery-stats/rating-stats/', self.rating_stats)
                ] + super().get_urls()
 
     def delivery_stats(self, request):
         order_count = Order.objects.count()
         shipper_count = Shipper.objects.count()
         customer_count = User.objects.filter(is_shipper=False).count()
+        post_count = OrderPost.objects.filter(is_checked=False).count()
+        auction_count = Auction.objects.count()
+        rate_count = Rating.objects.count()
+        total = Order.objects.raw('''
+        SELECT SUM(deliveryapp_order.total_price) as total, deliveryapp_order.id from deliveryapp_order''')
         return TemplateResponse(request, 'admin/delivery-stats.html', {
             'order_count': order_count,
             'shipper_count': shipper_count,
-            'customer_count': customer_count
+            'customer_count': customer_count,
+            'post_count': post_count,
+            'auction_count': auction_count,
+            'rate_count': rate_count,
+            'total': total
         })
+
+    def order_stats(self, request):
+        products = ProductCategory.objects.raw('''
+                                        SELECT deliveryapp_productcategory.id,name, COUNT(deliveryapp_order.id) as quantity, 
+                                        SUM(deliveryapp_order.total_price) as total
+                                         from  deliveryapp_order inner join deliveryapp_productcategory
+                                        where deliveryapp_productcategory.id = deliveryapp_order.product_cate_id
+
+                                        group by name
+                        ''')
+        services = Service.objects.raw('''
+                SELECT deliveryapp_service.id,name, COUNT(deliveryapp_order.id) as quantity, 
+                  SUM(deliveryapp_order.total_price) as total
+                 from  deliveryapp_order inner join deliveryapp_service
+                  where deliveryapp_service.id = deliveryapp_order.service_cate_id
+
+                    group by name
+        ''')
+        payments = Order.objects.raw('''
+                    SELECT deliveryapp_order.id, deliveryapp_order.pay_method as method, COUNT(deliveryapp_order.id) as quantity, 
+                          SUM(deliveryapp_order.total_price) as total
+                          from  deliveryapp_order
+                        group by deliveryapp_order.pay_method
+        ''')
+        return TemplateResponse(request, 'admin/order-stats.html', {
+            'orders_products': products,
+            'payments': payments,
+            'services': services
+        })
+
+    def rating_stats(self, request):
+        order_count = Order.objects.count()
+        shipper_count = Shipper.objects.count()
+        rate_count = Rating.objects.count()
+        rates = Rating.objects.raw('''
+                         SELECT deliveryapp_rating.id, rate, COUNT(deliveryapp_rating.id) as quantity
+                            from  deliveryapp_rating
+                            group by rate
+        ''')
+        return TemplateResponse(request, 'admin/rating-stats.html', {
+            'order_count': order_count,
+            'shipper_count': shipper_count,
+            'rate_count': rate_count,
+            'rates': rates
+        })
+
+    # class EditorChartView(TemplateView):
+    #     template_name = 'admin/delivery-stats.html'
+    #
+    #     def get_context_data(self, **kwargs):
+    #         context = super().get_context_data(**kwargs)
+    #         context["qs"] = Order.objects.count()
+    #         return context
 
 
 admin_site = DeliveryAppAdminSite("myapp")

@@ -1,0 +1,230 @@
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+{% extends 'admin/base_site.html' %}
+{% block content %}
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js"></script>
+    </head>
+    {% if user.is_active and user.is_staff %}
+        <form>
+            <input type="button" value="<Back previous page " onclick="history.back()">
+        </form>
+        <h1 class="text-center text-danger">Thống kê đơn hàng</h1>
+        <br/>
+        <h2>Theo loại hàng</h2>
+        <div align="center" class="flex">
+            <table class="table table-responsive" >
+                <tr class="text-center">
+                    <th>Mã hàng</th>
+                    <th>Loại hàng</th>
+                    <th>Số lượng đơn hàng</th>
+                    <th>Doanh thu</th>
+                    <th>Đơn vị tính</th>
+                    <th></th>
+                </tr>
+                {% for p in orders_products %}
+                    <tr class="text-center">
+                        <td> {{ p.id }} </td>
+                        <td> {{ p.name }}</td>
+                        <td>{{ p.quantity }} </td>
+                        <td> {{ p.total }} </td>
+                        <td>VNĐ</td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br/>
+        <div>
+            <canvas id="productChart" width="200" height="50"></canvas>
+        </div>
+        --------------------------------------------------------------------------------------------------------------------------------------
+        <br/>
+        <h2>Theo loại dịch vụ</h2>
+        <div align="center">
+            <table class="table table-responsive" >
+                <tr class="text-center">
+                    <th>Mã dịch vụ</th>
+                    <th>Tên dịch vụ</th>
+                    <th>Số lượng đơn hàng</th>
+                    <th>Doanh thu</th>
+                    <th>Đơn vị tính</th>
+                </tr>
+                {% for p in services %}
+                    <tr class="text-center">
+                        <td> {{ p.id }} </td>
+                        <td> {{ p.name }}</td>
+                        <td>{{ p.quantity }} </td>
+                        <td> {{ p.total }} </td>
+                        <td>VNĐ</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br/>
+        <div>
+            <canvas id="serviceChart" width="200" height="50"></canvas>
+        </div>
+        <br/>
+-----------------------------------------------------------------------------------------------------------------------
+        <h2>Theo phương thức thanh toán</h2>
+        <div align="center" class="flex">
+            <table class="table table-responsive" >
+                <tr class="text-center">
+                    <th>Mã phương thức</th>
+                    <th>Phương thức thanh toán</th>
+                    <th>Số lượng đơn hàng</th>
+                    <th>Doanh thu</th>
+                    <th>Đơn vị tính</th>
+                </tr>
+                {% for p in payments %}
+                    <tr class="text-center">
+                        <td> {{ p.pay_method }} </td>
+                        <td>
+                            {% if p.method == 0 %}
+                                Zalo pay
+                            {% endif %}
+                            {% if p.method == 1 %}
+                                Momo
+                            {% endif %}
+                            {% if p.method == 2 %}
+                                Tiền mặt
+                            {% endif %}
+                        </td>
+                        <td>{{ p.quantity }} </td>
+                        <td> {{ p.total }} </td>
+                        <td>VNĐ</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <br/>
+        {%block scripts%}
+        <script>
+            let b = []
+            let c = []
+            let d = []
+            {% for p in services %}
+                b.push(`{{ p.name }}`)
+                c.push({{ p.quantity }})
+                d.push({{ p.total}})
+            {% endfor %}
+
+
+            console.log(b)
+            console.log(c)
+
+            const ctx = document.getElementById('serviceChart').getContext('2d');
+            const orderChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: b,
+                    datasets: [{
+                        label: 'Đơn hàng',
+                        data: c,
+                        backgroundColor: [
+                            'rgba(240, 67, 160, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(240, 67, 160, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Doanh thu',
+                        data: d,
+                        backgroundColor: [
+                            'rgba(240, 67, 160, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(240, 67, 160, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+<!--            // product chart-->
+            let productName = []
+            let k= []
+            let h = []
+            {% for p in orders_products %}
+                productName.push(`{{ p.name }}`)
+                k.push({{ p.quantity }})
+                h.push({{ p.total}})
+            {% endfor %}
+
+
+
+
+            const ctx2 = document.getElementById('productChart').getContext('2d');
+            const productChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: productName,
+                    datasets: [{
+                        label: 'Đơn hàng',
+                        data: k,
+                        backgroundColor: [
+                            'rgba(240, 67, 160, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(240, 67, 160, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderWidth: 1
+                    }, {
+                        label: 'Doanh thu',
+                        data: h,
+                        backgroundColor: [
+                            'rgba(240, 67, 160, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(240, 67, 160, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(100, 123, 235, 0.2)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+<!--            // payment chart-->
+
+        </script>
+
+        {% endblock scripts%}
+    {% endif %}
+{% endblock %}

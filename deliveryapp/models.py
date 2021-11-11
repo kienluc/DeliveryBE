@@ -16,9 +16,8 @@ def validate_number(num):
 def validate_info(info):
     for n in info:
         if n.isdigit():
-            raise serializers.ValidationError("Can't include the number in your name")
-    if len(info) == 0:
-        raise serializers.ValidationError("Fill required")
+            raise serializers.ValidationError("Họ tên không được chứa chữ số")
+
     return info
 
 

@@ -210,8 +210,8 @@ class RatingAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin_site.register(User, UserAdmin)
-admin_site.register(Group)
-admin_site.register(Permission)
+# admin_site.register(Group)
+# admin_site.register(Permission)
 admin_site.register(Shipper, ShipperAdmin)
 admin_site.register(Service, ServiceAdmin)
 admin_site.register(OrderPost, OrderPostAdmin)

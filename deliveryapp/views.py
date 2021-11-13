@@ -197,9 +197,9 @@ class OrderViewSet(viewsets.ViewSet,
             ser.is_valid(raise_exception=True)
             ser.save()
             header = self.get_success_headers(ser.data)
-            if order.status == 2:
-                order.customer.email_user(subject="[Delivery][Order ship completely]",
-                                          message='Xác nhận đơn hàng của bạn đã được giao')
+            # if order.status == 2:
+            #     order.customer.email_user(subject="[Delivery][Order ship completely]",
+            #                               message='Xác nhận đơn hàng của bạn đã được giao')
             return Response(ser.data, status=status.HTTP_200_OK, headers=header)
 
         raise ValidationError("You are not shipper of this order")
@@ -304,8 +304,7 @@ class OrderPostViewSet(viewsets.ModelViewSet):
 
         raise PermissionDenied()
 
-    @action(methods=['post'], detail=True, url_path='hide-post',
-            url_name='hide-post')
+    @action(methods=['post'], detail=True, url_path='hide-post', url_name='hide-post')
     def hide_post(self, request, pk):
         try:
             post = OrderPost.objects.get(pk=pk)
@@ -329,8 +328,8 @@ class OrderPostViewSet(viewsets.ModelViewSet):
             auc = Auction.objects.create(post=self.get_object(),
                                          shipper=request.user,
                                          ship_cost=request.data.get('ship_cost'))
-            post.creator.email_user(subject="[Delivery][New Auction]",
-                                    message='Bài đăng của bạn có một đấu giá mới')
+            # post.creator.email_user(subject="[Delivery][New Auction]",
+            #                         message='Bài đăng của bạn có một đấu giá mới')
             return Response(AuctionSerializer(auc).data, status=status.HTTP_201_CREATED)
 
         raise ValidationError(detail="You are not shipper")
@@ -357,9 +356,9 @@ class OrderPostViewSet(viewsets.ModelViewSet):
                                          service_cate=post.service_cate)
             post.is_checked = True
             post.save()
-            auc.shipper.email_user(subject="[Delivery][Auction Success]",
-                                   message='Bạn là người đấu giá thắng - hãy truy cập hệ thống để kiểm tra danh sách '
-                                           'đơn hàng')
+            # auc.shipper.email_user(subject="[Delivery][Auction Success]",
+            #                        message='Bạn là người đấu giá thắng - hãy truy cập hệ thống để kiểm tra danh sách '
+            #                                'đơn hàng')
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
         raise ValidationError(detail="Invalid")
@@ -431,7 +430,7 @@ class AuctionViewSet(viewsets.ViewSet,
             return super().retrieve(request, *args, **kwargs)
         raise ValidationError(detail="Your are not allowed to do this action")
 
-    @action(methods=['post'], detail=True, url_path='confirm-auction', url_name='confirm-auction')
+    @action(methods=['PATCH'], detail=True, url_path='confirm-auction', url_name='confirm-auction')
     def confirm_auction(self, request, pk):
         try:
             auction = Auction.objects.get(pk=pk)

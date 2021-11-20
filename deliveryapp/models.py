@@ -128,8 +128,8 @@ class Order(models.Model):
 
     def __str__(self):
         return "Customer: {}\nShipper: {}, \nShip address: {}, \nCreated Date: {}, \nStatus: {},\n" \
-               "Total price: {}, \nPay method: {}".format(self.customer.first_name + " " + self.customer.last_name,
-                                                          self.shipper.first_name + " " + self.shipper.last_name,
+               "Total price: {}, \nPay method: {}".format(self.customer.last_name + " " + self.customer.first_name,
+                                                          self.shipper.last_name + " " + self.shipper.first_name,
                                                           self.ship_address,
                                                           self.created_date,
                                                           self.status,
@@ -166,7 +166,7 @@ class OrderPost(models.Model):
 
     def __str__(self):
         return "Creator: {}\n Active: {}\nCreated date: {}\n Status: {}".format(
-            self.creator.first_name + " " + self.creator.last_name,
+            self.creator.last_name + " " + self.creator.first_name,
             self.active,
             self.created_date,
             self.is_checked
@@ -187,7 +187,7 @@ class Auction(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "Shipper: {}\nCost: {}".format(self.shipper.first_name + " " + self.shipper.last_name,
+        return "Shipper: {}\nCost: {}".format(self.shipper.last_name + " " + self.shipper.first_name,
                                               self.ship_cost)
 
 
@@ -211,8 +211,8 @@ class Rating(models.Model):
 
     def __str__(self):
         return "Customer: {},\nshipper: {},\nComment: {},\nrate: {},\n".format(
-            self.customer.first_name + " " + self.customer.last_name,
-            self.shipper.first_name + " " + self.shipper.last_name,
+            self.customer.last_name + " " + self.customer.first_name,
+            self.shipper.last_name + " " + self.shipper.first_name,
             self.content,
             self.rate
         )

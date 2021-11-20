@@ -73,6 +73,7 @@
                     }
                 }
             });
+
         </script>
         {% endblock scripts%}
         <div>
@@ -82,9 +83,22 @@
             <h2>Tổng bài đăng đấu giá chưa hoàn tất: {{ post_count }}</h2>
             <h2>Tổng lượt đấu giá của shipper: {{ auction_count }}</h2>
             <h2>Tổng lượt đánh giá của cộng đồng: {{ rate_count }}</h2>
+        </div>
 
-
-
+<!--Thống kê linh hoạt theo ngày tháng (not complete yet)-->
+        <div class="flex">
+            <form>
+              <label>
+                From date:
+                <input type="date" name="from_date">
+              </label>
+            </form>
+            <form>
+              <label>
+                To date:
+                <input type="date" name="to_date">
+              </label>
+            </form>
         </div>
 
 

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Sum
+from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.urls import path
@@ -20,6 +21,8 @@ class DeliveryAppAdminSite(admin.AdminSite):
                ] + super().get_urls()
 
     def delivery_stats(self, request):
+        # from_date = request.GET.get('from_date')
+        # to_date = request.GET.get('to_date')
         order_count = Order.objects.count()
         shipper_count = Shipper.objects.count()
         customer_count = User.objects.filter(is_shipper=False).count()
@@ -28,6 +31,12 @@ class DeliveryAppAdminSite(admin.AdminSite):
         rate_count = Rating.objects.count()
         total = Order.objects.raw('''
         SELECT SUM(deliveryapp_order.total_price) as total, deliveryapp_order.id from deliveryapp_order''')
+
+        # revenue = Order.objects.raw('''
+    # SELECT SUM(deliveryapp_order.total_price) as total, COUNT(deliveryapp_order.id) AS quantity from deliveryapp_order
+        # where deliveryapp_order.created_date between '%s' and '%s'
+        #         ''', [from_date], [to_date])
+
         return TemplateResponse(request, 'admin/delivery-stats.html', {
             'order_count': order_count,
             'shipper_count': shipper_count,
@@ -35,7 +44,8 @@ class DeliveryAppAdminSite(admin.AdminSite):
             'post_count': post_count,
             'auction_count': auction_count,
             'rate_count': rate_count,
-            'total': total
+            'total': total,
+            # 'revenue': revenue
         })
 
     def order_stats(self, request):
@@ -83,14 +93,6 @@ class DeliveryAppAdminSite(admin.AdminSite):
             'rates': rates
         })
 
-    # class EditorChartView(TemplateView):
-    #     template_name = 'admin/delivery-stats.html'
-    #
-    #     def get_context_data(self, **kwargs):
-    #         context = super().get_context_data(**kwargs)
-    #         context["qs"] = Order.objects.count()
-    #         return context
-
 
 admin_site = DeliveryAppAdminSite("myapp")
 
@@ -125,7 +127,7 @@ class ShipperAdmin(admin.ModelAdmin):
     readonly_fields = ['front_id', 'back_id']
 
     def shipper_name(self, shipper):
-        return "%s %s" % (shipper.account.first_name, shipper.account.last_name)
+        return "%s %s" % (shipper.account.last_name, shipper.account.first_name)
 
     def gender(self, shipper):
         return "%s " % shipper.account.gender
@@ -157,7 +159,7 @@ class AuctionAdmin(admin.ModelAdmin):
         return "%s " % auction.post.id
 
     def shipper_name(self, auction):
-        return "%s %s" % (auction.shipper.first_name, auction.shipper.last_name)
+        return "%s %s" % (auction.shipper.last_name, auction.shipper.first_name)
 
 
 class OrderAdmin(admin.ModelAdmin):
@@ -172,10 +174,10 @@ class OrderAdmin(admin.ModelAdmin):
         return "%s " % order.product_cate.name
 
     def customer_name(self, order):
-        return "%s %s" % (order.customer.first_name, order.customer.last_name)
+        return "%s %s" % (order.customer.last_name, order.customer.first_name)
 
     def shipper_name(self, order):
-        return "%s %s" % (order.shipper.first_name, order.shipper.last_name)
+        return "%s %s" % (order.shipper.last_name, order.shipper.first_name)
 
 
 class OrderDetailAdmin(admin.ModelAdmin):
@@ -193,7 +195,7 @@ class OrderPostAdmin(admin.ModelAdmin):
     list_filter = ['is_checked']
 
     def creator_name(self, orderpost):
-        return "%s %s" % (orderpost.creator.first_name, orderpost.creator.last_name)
+        return "%s %s" % (orderpost.creator.last_name, orderpost.creator.first_name)
 
 
 class RatingAdmin(admin.ModelAdmin):
@@ -202,10 +204,10 @@ class RatingAdmin(admin.ModelAdmin):
                      'rate']
 
     def customer_name(self, rating):
-        return "%s %s" % (rating.customer.first_name, rating.customer.last_name)
+        return "%s %s" % (rating.customer.last_name, rating.customer.first_name)
 
     def shipper_name(self, rating):
-        return "%s %s" % (rating.shipper.first_name, rating.shipper.last_name)
+        return "%s %s" % (rating.shipper.last_name, rating.shipper.first_name)
 
 
 # Register your models here.

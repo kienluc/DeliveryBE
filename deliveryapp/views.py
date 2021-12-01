@@ -537,7 +537,6 @@ class OauthInfo(APIView):
     def get(self, request):
         return Response(settings.OAUTH2_INFO, status=status.HTTP_200_OK)
 
+
 # def index(request):
-#  return render(request, template_name='index.html', context={
-#     'name': 'LUC TUAN KIEN'
-# })
+#     return render(request, template_name='index.html')

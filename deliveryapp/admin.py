@@ -152,7 +152,7 @@ class ShipperAdmin(admin.ModelAdmin):
 
 class AuctionAdmin(admin.ModelAdmin):
     list_display = ['id', 'post_id', 'shipper_name', 'ship_cost', 'is_winner', 'active', 'created_date', 'updated_date']
-    search_fields = ['shipper__fisrt_name', 'shipper__last_name', 'ship_cost', 'active']
+    search_fields = ['shipper__first_name', 'shipper__last_name', 'ship_cost', 'active']
     list_filter = ['is_winner', 'post']
 
     def post_id(self, auction):
@@ -221,4 +221,4 @@ admin_site.register(Order, OrderAdmin)
 admin_site.register(ProductCategory, ProductAdmin)
 admin_site.register(Rating, RatingAdmin)
 admin_site.register(Auction, AuctionAdmin)
-admin_site.register(OrderDetail, OrderDetailAdmin)
+# admin_site.register(OrderDetail, OrderDetailAdmin)
